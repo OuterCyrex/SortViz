@@ -1,11 +1,12 @@
 <template>
   <el-row class="h-screen w-screen" :gutter="0">
     <el-col :span="16" class="h-full flex flex-col">
-      <div class="h-4/5 flex justify-center items-center overflow-hidden">
-        <BarChart ref="sortVizRef" />
+      <div class="h-5/6 flex justify-center items-center overflow-hidden">
+        <BarChart ref="sortVizRef" /> 
       </div>
-      <div class="h-1/5">
-        <el-card shadow="never" class="h-full p-4" body-style="height: 100%; padding: 16px;">
+      <div class="h-1/6">
+        <div shadow="never" class="h-full" body-style="height: 100%; padding: 16px;" style="background-color: #252526">
+        <div class="bg-gray-700 text-white p-2 mb-4">基础设置</div>
           <el-form :inline="false" label-width="72px">
             <el-row :gutter="12">
               <el-col :span="8">
@@ -43,31 +44,31 @@
                 </el-form-item>
               </el-col>
             </el-row>
-
-            <div class="flex justify-end">
-              <el-button :icon="RefreshRight" :disabled="isSorting" @click="handleResetArray">重置数组</el-button>
-              <el-button type="primary" :icon="VideoPlay" :loading="isSorting" @click="handleStartSort">开始排序</el-button>
-            </div>
           </el-form>
-        </el-card>
+        </div>
       </div>
     </el-col>
-    <el-col :span="8" class="h-full bg-red-400">
-      <div class="h-1/2">1</div>
-      <div class="h-1/2">1</div>
+    <el-col :span="8" class="h-full bg-gray-700 overflow-hidden">
+      <div class="flex justify-between p-4">
+        <div class="text-white font-semibold text-lg">Typescript编辑器</div>
+        <el-button class="text-white" :icon="Setting" circle/>
+      </div>
+      <CodeEditor v-model:value="code" language="typescript" theme="vs-dark"/>
     </el-col>
   </el-row>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { RefreshRight, VideoPlay } from '@element-plus/icons-vue'
+import { Setting, RefreshRight, VideoPlay } from '@element-plus/icons-vue'
 import BarChart from './components/BarChart.vue';
 import { useArrayConfigStore } from './stores/counter'
+import { CodeEditor } from 'monaco-editor-vue3';
 
 const sortVizRef = ref<InstanceType<typeof BarChart>>()
 const arrayStore = useArrayConfigStore()
 const isSorting = ref(false)
+const code = ref('')
 
 const lenModel = computed({
   get: () => arrayStore.arrayConfig.len,
