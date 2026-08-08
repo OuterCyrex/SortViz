@@ -86,7 +86,6 @@ const less = async (i: number, j: number): Promise<boolean> => {
     draw([i, j])
     await sleep(array.value.speed)
     array.value.compareCount++
-    if (!array.value.ascending) return (array.value.array[i] as number) > (array.value.array[j] as number )
     return (array.value.array[i] as number) < (array.value.array[j] as number )
 }
 

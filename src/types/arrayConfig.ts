@@ -7,7 +7,6 @@ export interface arrayConfig {
     swapCount: number
     speed: number
     showNumber: boolean
-    ascending: boolean
 }
 
 function getRandomInt(min: number, max: number): number {

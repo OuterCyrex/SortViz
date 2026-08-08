@@ -1,74 +1,79 @@
 <template>
   <el-row class="h-screen w-screen" :gutter="0">
     <el-col :span="16" class="h-full flex flex-col">
-      <div class="h-5/6 flex justify-center items-center overflow-hidden">
-        <BarChart ref="sortVizRef" /> 
+      <div class="h-5/6 flex items-center justify-center overflow-hidden">
+        <BarChart ref="sortVizRef" />
       </div>
-      <div class="h-1/6">
-        <div shadow="never" class="h-full" body-style="height: 100%; padding: 16px;" style="background-color: #252526">
-        <div class="bg-gray-700 text-white p-2 mb-4">基础设置</div>
-          <el-form :inline="false" label-width="72px">
-            <el-row :gutter="12">
-              <el-col :span="8">
-                <el-form-item label="长度">
-                  <el-input-number v-model="lenModel" :min="2" :max="200" controls-position="right" class="w-full" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="最小值">
-                  <el-input-number v-model="minModel" :min="1" :max="800" controls-position="right" class="w-full" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="最大值">
-                  <el-input-number v-model="maxModel" :min="1" :max="800" controls-position="right" class="w-full" />
-                </el-form-item>
-              </el-col>
-            </el-row>
 
-            <el-row :gutter="12">
-              <el-col :span="8">
-                <el-form-item label="速度">
-                  <div class="flex w-5/6 items-center">
-                    <el-slider v-model="speedModel" :min="1" :max="100" :step="1" />
-                  </div>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="显示数值" class="ml-3">
-                  <el-switch v-model="showNumberModel" inline-prompt active-text="开" inactive-text="关" />
-                </el-form-item></el-col>
-              <el-col :span="8">
-                <el-form-item label="升序排序" class="ml-3">
-                  <el-switch v-model="showAscending" inline-prompt active-text="开" inactive-text="关" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-form>
-        </div>
+      <div class="h-1/6 bg-[#252526]">
+        <div class="mb-4 bg-gray-700 p-2 text-white">基础设置</div>
+        <el-form :inline="false" label-width="72px">
+          <el-row :gutter="12">
+            <el-col :span="8">
+              <el-form-item label="长度">
+                <el-input-number v-model="lenModel" :min="2" :max="200" controls-position="right" class="w-full" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="最小值">
+                <el-input-number v-model="minModel" :min="1" :max="800" controls-position="right" class="w-full" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="最大值">
+                <el-input-number v-model="maxModel" :min="1" :max="800" controls-position="right" class="w-full" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row :gutter="12">
+            <el-col :span="8">
+              <el-form-item label="速度">
+                <el-slider v-model="speedModel" :min="1" :max="100" :step="1" class="w-5/6" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="显示数值">
+                <el-switch v-model="showNumberModel" inline-prompt active-text="开" inactive-text="关" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+            </el-col>
+          </el-row>
+        </el-form>
       </div>
     </el-col>
-    <el-col :span="8" class="h-full bg-gray-700 overflow-hidden">
-      <div class="flex justify-between p-4">
-        <div class="text-white font-semibold text-lg">Typescript编辑器</div>
-        <el-button class="text-white" :icon="Setting" circle/>
+
+    <el-col :span="8" class="h-full overflow-hidden bg-gray-700 flex flex-col">
+      <div class="flex shrink-0 items-center justify-between p-4">
+        <div class="text-lg font-semibold text-white">TypeScript 编辑器</div>
+        <el-button :icon="Setting" circle />
       </div>
-      <CodeEditor v-model:value="code" language="typescript" theme="vs-dark"/>
+
+      <div class="pb-4" :style="{ height: 'calc(100vh - 128px)' }">
+        <CodeEditor v-model:value="userCode" language="typescript" theme="vs-dark" height="100%" :width="'100%'"
+          :options="{ automaticLayout: true }" />
+      </div>
+
+      <div class="shrink-0 flex justify-end gap-3 border-gray-600 p-2 ">
+        <el-button :icon="RefreshRight" :disabled="isSorting" @click="handleResetArray">重置</el-button>
+        <el-button type="primary" :icon="VideoPlay" :loading="isSorting" @click="handleStartSort">运行</el-button>
+      </div>
     </el-col>
   </el-row>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Setting, RefreshRight, VideoPlay } from '@element-plus/icons-vue'
-import BarChart from './components/BarChart.vue';
+import { RefreshRight, Setting, VideoPlay } from '@element-plus/icons-vue'
+import { CodeEditor } from 'monaco-editor-vue3'
+import BarChart from './components/BarChart.vue'
 import { useArrayConfigStore } from './stores/counter'
-import { CodeEditor } from 'monaco-editor-vue3';
 
 const sortVizRef = ref<InstanceType<typeof BarChart>>()
 const arrayStore = useArrayConfigStore()
 const isSorting = ref(false)
-const code = ref('')
+const userCode = ref('')
 
 const lenModel = computed({
   get: () => arrayStore.arrayConfig.len,
@@ -95,31 +100,30 @@ const showNumberModel = computed({
   set: (value: boolean) => arrayStore.setShowNumber(value),
 })
 
-const showAscending = computed({
-  get: () => arrayStore.arrayConfig.ascending,
-  set: (value: boolean) => arrayStore.setAscending(value),
-})
-
 const handleResetArray = () => {
   sortVizRef.value?.resetArray()
 }
 
 async function handleStartSort() {
   const viz = sortVizRef.value
-  if (!viz) return
-  if (isSorting.value) return
+  if (!viz || isSorting.value) return
 
   isSorting.value = true
   try {
-    const n = viz.getLength()
-
-    for (let i = 0; i < n - 1; i++) {
-      for (let j = 0; j < n - i - 1; j++) {
-        if (!await viz.less(j, j + 1)) {
-          await viz.swap(j, j + 1)
-        }
-      }
-    }
+    const factory = new Function(
+      'less',
+      'swap',
+      'getLength',
+      'getArray',
+      `
+        ${userCode.value}
+        return typeof userSort === 'function' ? userSort : null;
+      `
+    );
+    const userSortFunc = factory(viz.less, viz.swap, viz.getLength, viz.getArray);
+    await userSortFunc();
+  } catch (e) {
+    alert('用户代码没有返回一个可执行的排序函数');
   } finally {
     isSorting.value = false
   }
