@@ -64,43 +64,7 @@ export const algorithmTemplates: AlgorithmTemplate[] = [
     }
   }
 }`,
-  },
-  {
-    key: 'quick',
-    name: 'Quick Sort',
-    description: '递归分治模板',
-    code: `async function partition(left: number, right: number): Promise<number> {
-  const pivotIndex = right
-  let storeIndex = left
-
-  for (let i = left; i < right; i++) {
-    if (await less(i, pivotIndex)) {
-      if (i !== storeIndex) {
-        await swap(i, storeIndex)
-      }
-      storeIndex++
-    }
   }
-
-  if (storeIndex !== right) {
-    await swap(storeIndex, right)
-  }
-
-  return storeIndex
-}
-
-async function quickSort(left: number, right: number): Promise<void> {
-  if (left >= right) return
-
-  const pivotIndex = await partition(left, right)
-  await quickSort(left, pivotIndex - 1)
-  await quickSort(pivotIndex + 1, right)
-}
-
-async function userSort() {
-  await quickSort(0, getLength() - 1)
-}`,
-  },
 ]
 
 export const defaultAlgorithmTemplate: AlgorithmTemplate = algorithmTemplates[0]!

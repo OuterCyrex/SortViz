@@ -18,7 +18,13 @@ let resizeObserver: ResizeObserver | undefined
 
 const arrayStore = useArrayConfigStore()
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number) => new Promise((resolve, reject) => setTimeout(() => {
+    if (arrayStore.stopRequested) {
+        reject(new Error('stopped'))
+        return
+    }
+    resolve(void 0)
+}, ms))
 
 const syncCanvasSize = () => {
     const container = containerRef.value
@@ -76,6 +82,7 @@ const draw = (highlightIndices?: number[], swapIndices?: number[]) => {
 
 const less = async (i: number, j: number): Promise<boolean> => {
     if (!array.value) return false
+    if (arrayStore.stopRequested) throw new Error('stopped')
     
     const len = array.value.len
     if (i < 0 || i >= len || j < 0 || j >= len) {
@@ -91,6 +98,7 @@ const less = async (i: number, j: number): Promise<boolean> => {
 
 const swap = async (i: number, j: number): Promise<void> => {
     if (!array.value) return
+    if (arrayStore.stopRequested) throw new Error('stopped')
     
     const len = array.value.len
     if (i < 0 || i >= len || j < 0 || j >= len) {
@@ -107,6 +115,7 @@ const swap = async (i: number, j: number): Promise<void> => {
     
     draw([], [i, j])
     await sleep(array.value.speed)
+    if (arrayStore.stopRequested) throw new Error('stopped')
     const temp = array.value.array[i]
     array.value.array[i] = array.value.array[j] as number
     array.value.array[j] = temp as number

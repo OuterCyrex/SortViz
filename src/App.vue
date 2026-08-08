@@ -46,7 +46,10 @@
     <el-col :span="8" class="h-full overflow-hidden bg-gray-700 flex flex-col">
       <div class="flex shrink-0 items-center justify-between p-4">
         <div class="text-lg font-semibold text-white">TypeScript 编辑器</div>
-        <el-button :icon="Setting" circle @click="templateDialogVisible = true" />
+        <div class="flex items-center gap-2">
+          <el-button :icon="QuestionFilled" circle @click="helpDialogVisible = true" />
+          <el-button :icon="Setting" circle @click="templateDialogVisible = true" />
+        </div>
       </div>
 
       <div class="pb-4" :style="{ height: 'calc(100vh - 128px)' }">
@@ -62,7 +65,12 @@
 
       <div class="shrink-0 flex justify-end gap-3 border-gray-600 p-2">
         <el-button :icon="RefreshRight" :disabled="isSorting" @click="handleResetArray">重置</el-button>
-        <el-button type="primary" :icon="VideoPlay" :loading="isSorting" @click="handleStartSort">运行</el-button>
+        <el-button
+          :type="isSorting ? 'danger' : 'primary'"
+          @click="handleToggleSort"
+        >
+          {{ isSorting ? '终止' : '运行' }}
+        </el-button>
       </div>
     </el-col>
   </el-row>
@@ -102,11 +110,50 @@
       <el-button type="primary" @click="applyTemplate">应用模板</el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="helpDialogVisible" title="如何编写排序函数" width="760px">
+    <el-space direction="vertical" alignment="start" :size="12" class="w-full">
+      <el-alert
+        title="编辑器里的代码必须导出一个名为 userSort 的异步函数"
+        type="info"
+        :closable="false"
+        show-icon
+      />
+
+      <el-card shadow="never" class="w-full">
+        <template #header>可用 API</template>
+        <ul class="list-disc pl-5 space-y-2 text-sm">
+          <li><code>await less(i, j)</code>：比较两个下标，返回是否需要继续当前顺序。</li>
+          <li><code>await swap(i, j)</code>：交换两个下标的元素。</li>
+          <li><code>getLength()</code>：获取数组长度。</li>
+          <li><code>getArray()</code>：获取当前数组值，通常只读使用。</li>
+        </ul>
+      </el-card>
+
+      <el-card shadow="never" class="w-full">
+        <template #header>最小示例</template>
+        <pre class="whitespace-pre-wrap text-sm leading-6"><code>async function userSort() {
+  const n = getLength()
+  for (let i = 0; i &lt; n - 1; i++) {
+    for (let j = 0; j &lt; n - i - 1; j++) {
+      if (!await less(j, j + 1)) {
+        await swap(j, j + 1)
+      }
+    }
+  }
+}</code></pre>
+      </el-card>
+    </el-space>
+
+    <template #footer>
+      <el-button type="primary" @click="helpDialogVisible = false">知道了</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { RefreshRight, Setting, VideoPlay } from '@element-plus/icons-vue'
+import { QuestionFilled, RefreshRight, Setting, VideoPlay } from '@element-plus/icons-vue'
 import { CodeEditor } from 'monaco-editor-vue3'
 import BarChart from './components/BarChart.vue'
 import { useArrayConfigStore } from './stores/counter'
@@ -116,6 +163,7 @@ const sortVizRef = ref<InstanceType<typeof BarChart>>()
 const arrayStore = useArrayConfigStore()
 const isSorting = ref(false)
 const templateDialogVisible = ref(false)
+const helpDialogVisible = ref(false)
 const selectedTemplateKey = ref(defaultAlgorithmTemplate.key)
 const currentTemplate = computed(() => getAlgorithmTemplate(selectedTemplateKey.value))
 const userCode = ref(defaultAlgorithmTemplate.code)
@@ -154,11 +202,17 @@ const applyTemplate = () => {
   templateDialogVisible.value = false
 }
 
-async function handleStartSort() {
+async function handleToggleSort() {
+  if (isSorting.value) {
+    arrayStore.requestStopRun()
+    return
+  }
+
   const viz = sortVizRef.value
-  if (!viz || isSorting.value) return
+  if (!viz) return
 
   isSorting.value = true
+  arrayStore.clearStopRequested()
   try {
     const factory = new Function(
       'less',
@@ -176,10 +230,13 @@ async function handleStartSort() {
       throw new Error('userSort not found')
     }
     await userSortFunc()
-  } catch {
-    alert('请确保模板或代码里导出了 userSort 函数')
+  } catch (error) {
+    if (!(error instanceof Error && error.message === 'stopped')) {
+      alert('请确保模板或代码里导出了 userSort 函数')
+    }
   } finally {
     isSorting.value = false
+    arrayStore.clearStopRequested()
   }
 }
 </script>
