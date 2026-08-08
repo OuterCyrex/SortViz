@@ -14,7 +14,13 @@ export const useCounterStore = defineStore('counter', () => {
 
 
 export const useArrayConfigStore = defineStore('arrayConfig', () => {
-  const instance = ref<arrayConfig>({len: 10, array: [], min: 0, max: 100, compareCount: 0,swapCount: 0})
+  const instance = ref<arrayConfig>({len: 60, array: [], min: 0, max: 800, compareCount: 0,swapCount: 0, speed: 10, showNumber: false, ascending: true})
   InitArray(instance.value)
-  return { arrayConfig: instance }
+  const setLen = (len: number) => {instance.value.len = len}
+  const setMin = (min: number) => {instance.value.min = min}
+  const setMax = (max: number) => {instance.value.max = max}
+  const setSpeed = (speed: number) => {instance.value.speed = speed}
+  const setShowNumber = (showNumber: boolean) => {instance.value.showNumber = showNumber}
+  const setAscending = (ascending: boolean) => {instance.value.ascending = ascending}
+  return { arrayConfig: instance, setLen, setMin, setMax, setSpeed, setShowNumber, setAscending }
 })

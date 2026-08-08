@@ -7,13 +7,12 @@
 <script setup lang="ts">
 import { useArrayConfigStore } from '@/stores/counter'
 import { InitArray, type arrayConfig } from '@/types/arrayConfig'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const array = ref<arrayConfig | null>(null)
-const canvasWidth = 800
-const canvasHeight = 400
-const speed = ref(200)
+const canvasWidth = 1400
+const canvasHeight = 800
 
 const arrayStore = useArrayConfigStore()
 
@@ -41,11 +40,13 @@ const draw = (highlightIndices?: number[], swapIndices?: number[]) => {
         }
         ctx.fillRect(x, y, barWidth - 2, value)
         
-        ctx.fillStyle = '#333'
-        ctx.font = '12px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'bottom'
-        ctx.fillText(String(value), x + (barWidth - 2) / 2, y - 2)
+        if (array.value?.showNumber) {
+            ctx.fillStyle = '#333'
+            ctx.font = '12px Arial'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'bottom'
+            ctx.fillText(String(value), x + (barWidth - 2) / 2, y - 2)
+        }
     })
 }
 
@@ -60,8 +61,9 @@ const less = async (i: number, j: number): Promise<boolean> => {
     }
     
     draw([i, j])
-    await sleep(speed.value)
+    await sleep(array.value.speed)
     array.value.compareCount++
+    if (!array.value.ascending) return (array.value.array[i] as number) > (array.value.array[j] as number )
     return (array.value.array[i] as number) < (array.value.array[j] as number )
 }
 
@@ -76,19 +78,19 @@ const swap = async (i: number, j: number): Promise<void> => {
     
     if (i === j) {
         draw([], [i])
-        await sleep(speed.value / 2)
+        await sleep(array.value.speed / 2)
         draw()
         return
     }
     
     draw([], [i, j])
-    await sleep(speed.value)
+    await sleep(array.value.speed)
     const temp = array.value.array[i]
     array.value.array[i] = array.value.array[j] as number
     array.value.array[j] = temp as number
     array.value.swapCount++
     draw()
-    await sleep(speed.value / 2)
+    await sleep(array.value.speed / 2)
 }
 
 const resetArray = () => {
@@ -106,12 +108,16 @@ defineExpose({
     swap,
     resetArray,
     getArray,
-    getLength,
-    speed,
+    getLength
 })
 
 onMounted(() => {
     array.value = InitArray(arrayStore.arrayConfig)
     draw()
 })
+
+watch(
+    () => arrayStore.arrayConfig.showNumber,
+    () => draw(),
+)
 </script>
