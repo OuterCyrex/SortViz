@@ -1,48 +1,77 @@
 # SortViz
 
-This template should help get you started developing with Vue 3 in Vite.
+一个基于 Vue 3 + Vite 的排序可视化项目。
 
-## Recommended IDE Setup
+## 项目简介
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+SortViz 用左右分栏的方式展示排序过程：
 
-## Recommended Browser Setup
+- 左侧是数组可视化和基础参数设置
+- 右侧是 TypeScript 编辑器，可以直接编写排序逻辑
+- 内置常见算法模板，支持一键填充
+- 支持运行中终止，便于调试算法流程
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## 核心功能
 
-## Type Support for `.vue` Imports in TS
+- 动态绘制数组柱状图
+- 调整数组长度、最小值、最大值、速度、是否显示数值
+- 在编辑器中编写 `userSort()` 排序函数
+- 通过模板快速生成常见排序算法
+- 运行与终止一键切换
+- 提供说明弹窗，帮助用户快速上手
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 技术栈
 
-## Customize configuration
+- Vue 3
+- Vite
+- TypeScript
+- Pinia
+- Element Plus
+- Monaco Editor
+- Tailwind CSS 4
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 排序函数写法
 
-## Project Setup
+编辑器中的代码需要导出一个 `userSort` 异步函数：
 
-```sh
-npm install
+```ts
+async function userSort() {
+  const n = getLength()
+
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      if (!await less(j, j + 1)) {
+        await swap(j, j + 1)
+      }
+    }
+  }
+}
 ```
 
-### Compile and Hot-Reload for Development
+可用 API：
 
-```sh
+- `await less(i, j)`：比较两个下标
+- `await swap(i, j)`：交换两个下标
+- `getLength()`：获取数组长度
+- `getArray()`：获取当前数组
+
+## 项目启动
+
+```bash
+npm install
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## 常用命令
 
-```sh
+```bash
 npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+npm run preview
 npm run lint
 ```
+
+## 说明
+
+- 右上角设置按钮可选择常见算法模板
+- 右上角说明按钮可查看函数编写方式
+- 当前项目适合用于教学、演示和自定义排序算法实验
