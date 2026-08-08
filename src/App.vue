@@ -15,12 +15,12 @@
               </el-col>
               <el-col :span="8">
                 <el-form-item label="最小值">
-                  <el-input-number v-model="minModel" :min="0" :max="800" controls-position="right" class="w-full" />
+                  <el-input-number v-model="minModel" :min="1" :max="800" controls-position="right" class="w-full" />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="最大值">
-                  <el-input-number v-model="maxModel" :min="0" :max="800" controls-position="right" class="w-full" />
+                  <el-input-number v-model="maxModel" :min="1" :max="800" controls-position="right" class="w-full" />
                 </el-form-item>
               </el-col>
             </el-row>
