@@ -127,12 +127,14 @@
           <li><code>await swap(i, j)</code>：交换两个下标的元素。</li>
           <li><code>getLength()</code>：获取数组长度。</li>
           <li><code>getArray()</code>：获取当前数组值，通常只读使用。</li>
+          <li><code>await getValue(i)</code>：获取下标 <code>i</code> 的当前元素值；下标越界时返回 <code>undefined</code>。</li>
+          <li><code>await setValue(i, value)</code>：设置下标 <code>i</code> 的元素值。</li>
         </ul>
       </el-card>
 
       <el-card shadow="never" class="w-full">
         <template #header>最小示例</template>
-        <pre class="whitespace-pre-wrap text-sm leading-6"><code>async function userSort() {
+        <pre class="whitespace-pre-wrap text-sm leading-6"><code>{{`async function userSort() {
   const n = getLength()
   for (let i = 0; i &lt; n - 1; i++) {
     for (let j = 0; j &lt; n - i - 1; j++) {
@@ -141,7 +143,7 @@
       }
     }
   }
-}</code></pre>
+}`}}</code></pre>
       </el-card>
     </el-space>
 
@@ -204,39 +206,44 @@ const applyTemplate = () => {
 
 async function handleToggleSort() {
   if (isSorting.value) {
-    arrayStore.requestStopRun()
-    return
+    arrayStore.requestStopRun();
+    return;
   }
 
-  const viz = sortVizRef.value
-  if (!viz) return
+  const viz = sortVizRef.value;
+  if (!viz) return;
 
-  isSorting.value = true
-  arrayStore.clearStopRequested()
+  isSorting.value = true;
+  arrayStore.clearStopRequested();
   try {
-    const factory = new Function(
-      'less',
-      'swap',
-      'getLength',
-      'getArray',
-      `
+    const wrapper = `
+      (function(less, swap, getLength, getArray, getValue, setValue) {
         ${userCode.value}
-        return typeof userSort === 'function' ? userSort : null;
-      `,
-    )
+        return userSort;
+      })
+    `;
 
-    const userSortFunc = factory(viz.less, viz.swap, viz.getLength, viz.getArray)
+    const userSortFunc = eval(wrapper)(
+      viz.less,
+      viz.swap,
+      viz.getLength,
+      viz.getArray,
+      viz.getValue,
+      viz.setValue,
+    );
+
     if (typeof userSortFunc !== 'function') {
-      throw new Error('userSort not found')
+      throw new Error('userSort not found');
     }
-    await userSortFunc()
+    await userSortFunc();
   } catch (error) {
+    console.log(error);
     if (!(error instanceof Error && error.message === 'stopped')) {
-      alert('请确保模板或代码里导出了 userSort 函数')
+      alert('请检查代码，确保定义了 userSort 函数');
     }
   } finally {
-    isSorting.value = false
-    arrayStore.clearStopRequested()
+    isSorting.value = false;
+    arrayStore.clearStopRequested();
   }
 }
 </script>

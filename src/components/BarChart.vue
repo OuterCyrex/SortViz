@@ -133,13 +133,48 @@ const resetArray = () => {
 
 const getArray = () => array.value?.array ?? []
 const getLength = () => array.value?.len ?? 0
+const getValue = async (i: number): Promise<number | undefined> => {
+    if (!array.value) return undefined
+
+    const len = getLength()
+    if (i < 0 || i >= len) {
+        console.warn(`[getValue] 索引越界: i=${i}, 数组长度=${len}`)
+        return undefined
+    }
+    const currentArray = array.value
+    const value = currentArray.array[i]
+    draw([i])
+    await sleep(currentArray.speed)
+    return value
+}
+
+const setValue = async (i: number, value: number): Promise<void> => {
+    if (!array.value) return
+    if (arrayStore.stopRequested) throw new Error('stopped')
+
+    const len = array.value.len
+    if (i < 0 || i >= len) {
+        console.warn(`[setValue] index out of bounds: i=${i}, length=${len}`)
+        return
+    }
+
+    draw([i])
+    await sleep(array.value.speed)
+    if (arrayStore.stopRequested) throw new Error('stopped')
+    array.value.array[i] = value
+    draw([i])
+    await sleep(array.value.speed / 2)
+    draw()
+}
 
 defineExpose({
     less,
     swap,
     resetArray,
     getArray,
-    getLength
+    getLength,
+    getValue,
+    setValue
 })
 
 onMounted(() => {

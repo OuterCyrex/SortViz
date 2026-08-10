@@ -54,6 +54,8 @@ async function userSort() {
 - `await swap(i, j)`：交换两个下标
 - `getLength()`：获取数组长度
 - `getArray()`：获取当前数组
+- `await getValue(i)`：获取下标 `i` 的当前元素值，并显示高亮动画；下标越界时返回 `undefined`
+- `await setValue(i, value)`：设置下标 `i` 的元素值，并显示高亮动画
 
 ## 项目启动
 
